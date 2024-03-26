@@ -5,10 +5,15 @@ import { setData, listenToStream } from '@functions/index';
 import dynamoResources from '@resources/dynamoResources';
 
 const serverlessConfiguration: AWS = {
-  service: 'serverless-aws-api',
+  service: 'peter-backend',
   frameworkVersion: '3',
   custom: {
     myTable: '${sls:stage}-my-table',
+    webpack: {
+      webpackConfig: './webpack.config.js',
+      includeModules: true,
+      packager: 'npm',
+    },
     esbuild: {
       bundle: true,
       minify: false,
@@ -20,12 +25,11 @@ const serverlessConfiguration: AWS = {
       concurrency: 10,
     },
   },
-  plugins: ['serverless-esbuild', 'serverless-offline'],
+  plugins: ['serverless-esbuild', 'serverless-offline', 'serverless-webpack'],
   provider: {
     name: 'aws',
     runtime: 'nodejs16.x',
     region: 'eu-central-1',
-    // profile: 'jacKlinc',
     apiGateway: {
       minimumCompressionSize: 1024,
       shouldStartNameWithService: true,

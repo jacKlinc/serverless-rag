@@ -1,7 +1,8 @@
 import 'dotenv/config';
 import type { AWS } from '@serverless/typescript';
-
-import { setData, listenToStream, chatBot, putNewPdf } from '@functions/index';
+// TODO: move to AWS SDK v3
+import { setData, listenToStream, chatBot, /*putNewPdf*/ } from '@functions/index';
+// TODO: abstract resources like functions
 import dynamoResources from '@resources/dynamoResources';
 import kendraResources from '@resources/kendraResources';
 import s3Resources from '@resources/s3Resources';
@@ -33,7 +34,7 @@ const serverlessConfiguration: AWS = {
     stage: process.env.STAGE,
     runtime: 'nodejs16.x',
     // @ts-ignore
-    region: process.env.REGION, 
+    region: process.env.REGION,
     apiGateway: {
       minimumCompressionSize: 1024,
       shouldStartNameWithService: true,
@@ -43,6 +44,7 @@ const serverlessConfiguration: AWS = {
       NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000',
       myTable: '${self:custom.myTable}',
     },
+    // TODO: abstract IAM role to "constructs/" folder
     iamRoleStatements: [
       {
         Effect: 'Allow',
@@ -65,10 +67,10 @@ const serverlessConfiguration: AWS = {
       },
     ],
   },
-  functions: { setData, listenToStream, chatBot, putNewPdf },
+  functions: { setData, listenToStream, chatBot, /*putNewPdf*/ },
   resources: {
     Resources: {
-      ...dynamoResources, ...kendraResources, ...s3Resources
+      ...dynamoResources, ...s3Resources, ...kendraResources
     }
   },
   package: { individually: true },

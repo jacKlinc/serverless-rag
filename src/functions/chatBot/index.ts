@@ -5,7 +5,7 @@ export default {
   events: [
     {
       httpApi: {
-        path: `/${__dirname}`,
+        path: '/chatbot',
         method: 'get',
       },
     },

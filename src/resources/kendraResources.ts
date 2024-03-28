@@ -1,19 +1,9 @@
 import type { AWS } from '@serverless/typescript';
 
+const role = { 'Fn::GetAtt': ['KendraIndexRole', 'Arn'] }
+
+
 const kendraResources: AWS['resources']['Resources'] = {
-  KendraIndex: {
-    Type: 'AWS::Kendra::Index',
-    Properties: {
-      Name: '${self:service}-${self:provider.stage}-index',
-      RoleArn: {
-        'Fn::GetAtt': ['KendraIndexRole', 'Arn'],
-      },
-      Description: 'Amazon Kendra Index for the RAG chatbot app',
-      EditionConfiguration: {
-        EditionType: 'DEVELOPER_EDITION',
-      },
-    },
-  },
   KendraIndexRole: {
     Type: 'AWS::IAM::Role',
     Properties: {
@@ -29,29 +19,35 @@ const kendraResources: AWS['resources']['Resources'] = {
           },
         ],
       },
-      ManagedPolicyArns: [
-        'arn:aws:iam::aws:policy/AmazonKendraReadOnlyAccess',
-        'arn:aws:iam::aws:policy/AmazonKendraFreeQueryAccess',
-      ],
+      // ManagedPolicyArns: [
+      //   'arn:aws:iam::aws:policy/AmazonKendraReadOnlyAccess',
+      //   'arn:aws:iam::aws:policy/AmazonKendraFreeQueryAccess',
+      // ],
+    },
+  },
+  KendraIndex: {
+    Type: 'AWS::Kendra::Index',
+    Properties: {
+      Name: '${self:service}-${self:provider.stage}-index',
+      RoleArn: role,
+      Description: 'Amazon Kendra Index for the RAG chatbot app',
+      Edition: 'DEVELOPER_EDITION',
     },
   },
   KendraDataSource: {
     Type: 'AWS::Kendra::DataSource',
     Properties: {
-      IndexId: {
-        'Fn::Ref': 'KendraIndex',
-      },
+      Name: "KendraDataSource",
+      IndexId: { Ref: 'KendraIndex' },
       Type: 'S3',
       DataSourceConfiguration: {
         S3Configuration: {
           BucketName: {
-            'Fn::Ref': 'S3BucketForPDFs',
+            Ref: 'S3BucketForPDFs',
           },
         },
       },
-      RoleArn: {
-        'Fn::GetAtt': ['KendraIndexRole', 'Arn'],
-      },
+      RoleArn: role,
     },
   }
 }

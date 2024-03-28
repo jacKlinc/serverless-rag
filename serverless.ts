@@ -1,11 +1,13 @@
 import 'dotenv/config';
 import type { AWS } from '@serverless/typescript';
 
-import { setData, listenToStream } from '@functions/index';
+import { setData, listenToStream, chatBot, putNewPdf } from '@functions/index';
 import dynamoResources from '@resources/dynamoResources';
+import kendraResources from '@resources/kendraResources';
+import s3Resources from '@resources/s3Resources';
 
 const serverlessConfiguration: AWS = {
-  service: 'peter-backend',
+  service: process.env.SERVICE_NAME,
   frameworkVersion: '3',
   custom: {
     myTable: '${sls:stage}-my-table',
@@ -28,8 +30,10 @@ const serverlessConfiguration: AWS = {
   plugins: ['serverless-esbuild', 'serverless-offline', 'serverless-webpack'],
   provider: {
     name: 'aws',
+    stage: process.env.STAGE,
     runtime: 'nodejs16.x',
-    region: 'eu-central-1',
+    // @ts-ignore
+    region: process.env.REGION, 
     apiGateway: {
       minimumCompressionSize: 1024,
       shouldStartNameWithService: true,
@@ -47,13 +51,25 @@ const serverlessConfiguration: AWS = {
           'arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/${self:custom.myTable}',
         ],
       },
+      {
+        Effect: 'Allow',
+        Action: [
+          'kendra:CreateIndex',
+          'kendra:DescribeIndex',
+          'kendra:QueryContext',
+          'kendra:Query',
+          's3:GetObject',
+          's3:ListBucket',
+        ],
+        Resource: ['*'],
+      },
     ],
   },
-  functions: { setData, listenToStream },
+  functions: { setData, listenToStream, chatBot, putNewPdf },
   resources: {
     Resources: {
-      ...dynamoResources,
-    },
+      ...dynamoResources, ...kendraResources, ...s3Resources
+    }
   },
   package: { individually: true },
 };
